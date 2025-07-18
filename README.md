@@ -7,20 +7,20 @@ CodingPlatform is a web-based coding challenge platform that allows users to sol
 ## 📷 Screenshots
 
 ### Problem List Page
-![Problem List](./screenshots/problem-list.png)
+![Problem List](./screenshots/ProblemList.png)
 *Browse through available DSA problems with clean card-based layout*
 
 ### Problem Solving Interface
-![Problem Page](./screenshots/problem-page.png)
+![Problem Page](./screenshots/SubmitCode.png)
 *Interactive code editor with problem description and real-time execution*
 
 ### Code Execution Results
-![Code Execution](./screenshots/code-execution.png)
+![Code Execution](./screenshots/RunCode.png)
 *Real-time code execution with test case validation and output display*
 
-### Responsive Design
-![Mobile View](./screenshots/mobile-view.png)
-*Fully responsive design optimized for mobile and tablet devices*
+### Code Submission Results
+![Code Execution](./screenshots/CodeUI.png)
+*Real-time code submission with test case validation and output display*
 
 ## ✨ Features
 
