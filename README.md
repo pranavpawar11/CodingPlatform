@@ -89,19 +89,6 @@ yarn start
 
 4. Open your browser and navigate to `http://localhost:3000`
 
-## 📸 Adding Screenshots
-
-To add screenshots to your README:
-
-1. Create a `screenshots` folder in your project root
-2. Take screenshots of your application:
-   - `problem-list.png` - Your problems listing page
-   - `problem-page.png` - Individual problem with code editor
-   - `code-execution.png` - Code execution results
-   - `mobile-view.png` - Mobile responsive view
-3. Save the images in the `screenshots` folder
-4. The README will automatically display them using the paths shown above
-
 ## 🔧 Configuration
 
 ### Judge0 API Setup
@@ -123,46 +110,6 @@ The project uses Judge0 API for code execution. Make sure to:
 - ✅ Responsive UI with Tailwind CSS
 - ✅ Navigation between pages
 
-### Architecture Highlights
-
-- **Component-based**: Modular React components for reusability
-- **Custom Hooks**: Centralized code execution logic
-- **Service Layer**: Abstracted API communication
-- **Static Data**: Problem definitions stored in JavaScript objects
-
-## 🎯 Use Cases
-
-This platform is ideal for:
-
-- Coding interview preparation
-- Algorithm practice
-- Educational purposes
-- Technical assessment platforms
-- Coding bootcamps and courses
-
-## 🔮 Future Enhancements
-
-- User authentication and profiles
-- Dynamic problem loading from database
-- Multiple programming language support
-- Performance metrics and analytics
-- Social features (leaderboards, discussions)
-- Advanced test case management
-- Code submission history
-
-## 🤝 Contributing
-
-This is a proof-of-concept project developed for an internship task. For any suggestions or improvements, please feel free to open an issue or submit a pull request.
-
-## 📄 License
-
-This project is created for educational and demonstration purposes.
-
-## 🙏 Acknowledgments
-
-- Inspired by HackerRank's coding platform
-- Built as part of an internship technical assessment
-- Uses Judge0 API for secure code execution
 
 ---
 
