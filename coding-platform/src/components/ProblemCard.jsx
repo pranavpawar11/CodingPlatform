@@ -34,14 +34,14 @@ const ProblemCard = ({ problem }) => {
             {problem.description}
           </p>
           <div className="flex items-center space-x-2">
-            {problem.tags.map((tag, index) => (
+            {/* {problem.tags.map((tag, index) => (
               <span 
                 key={index} 
                 className="bg-gray-700 text-gray-300 px-2 py-1 rounded-md text-xs"
               >
                 {tag}
               </span>
-            ))}
+            ))} */}
           </div>
         </div>
         <div className="flex items-center space-x-4 ml-6">

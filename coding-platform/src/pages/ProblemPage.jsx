@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor';
+import useCodeExecution from '../hooks/useCodeExecution';
 import problems from '../data/problems';
 
 const ProblemPage = () => {
@@ -8,9 +9,18 @@ const ProblemPage = () => {
   const [problem, setProblem] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('cpp');
   const [code, setCode] = useState('');
-  const [isRunning, setIsRunning] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [testResults, setTestResults] = useState(null);
+  const [customInput, setCustomInput] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+
+  const {
+    isRunning,
+    isSubmitting,
+    executionResult,
+    error,
+    runCode,
+    submitCode,
+    clearResults
+  } = useCodeExecution();
 
   useEffect(() => {
     const foundProblem = problems.find(p => p.id === id);
@@ -25,32 +35,47 @@ const ProblemPage = () => {
     if (problem && problem.starterCode[language]) {
       setCode(problem.starterCode[language]);
     }
+    clearResults();
   };
 
   const handleRunCode = async () => {
-    setIsRunning(true);
-    // Simulate code execution
-    setTimeout(() => {
-      setTestResults({
-        status: 'success',
-        message: 'Code executed successfully!',
-        output: 'Sample output based on test case'
-      });
-      setIsRunning(false);
-    }, 2000);
+    if (!code.trim()) {
+      alert('Please write some code first!');
+      return;
+    }
+
+    const input = showCustomInput ? customInput : problem?.sampleInput || '';
+    await runCode(selectedLanguage, code, input);
   };
 
   const handleSubmitCode = async () => {
-    setIsSubmitting(true);
-    // Simulate code submission
-    setTimeout(() => {
-      setTestResults({
-        status: 'accepted',
-        message: 'Congratulations! All test cases passed.',
-        score: problem?.maxScore || 0
+    if (!code.trim()) {
+      alert('Please write some code first!');
+      return;
+    }
+
+    // Create test cases from problem data
+    const testCases = [];
+    
+    // Add sample test case
+    if (problem?.sampleInput && problem?.sampleOutput) {
+      testCases.push({
+        input: problem.sampleInput,
+        expectedOutput: problem.sampleOutput
       });
-      setIsSubmitting(false);
-    }, 3000);
+    }
+
+    // Add additional test cases if available
+    if (problem?.testCases) {
+      testCases.push(...problem.testCases);
+    }
+
+    if (testCases.length === 0) {
+      alert('No test cases available for this problem!');
+      return;
+    }
+
+    await submitCode(selectedLanguage, code, testCases);
   };
 
   if (!problem) {
@@ -73,6 +98,12 @@ const ProblemPage = () => {
       case 'Hard': return 'text-red-400';
       default: return 'text-gray-400';
     }
+  };
+
+  const getStatusColor = (status) => {
+    if (status === 'accepted' || status === 'Accepted') return 'bg-green-900 text-green-300';
+    if (status === 'failed' || status?.includes('Error')) return 'bg-red-900 text-red-300';
+    return 'bg-blue-900 text-blue-300';
   };
 
   return (
@@ -173,9 +204,12 @@ const ProblemPage = () => {
                 <option value="python">Python</option>
                 <option value="java">Java</option>
               </select>
-              <span className="text-gray-400 text-sm">
-                Theme: Dark
-              </span>
+              <button
+                onClick={() => setShowCustomInput(!showCustomInput)}
+                className="text-gray-400 hover:text-white text-sm"
+              >
+                Custom Input
+              </button>
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -201,8 +235,23 @@ const ProblemPage = () => {
             </div>
           </div>
 
+          {/* Custom Input Panel */}
+          {showCustomInput && (
+            <div className="p-4 border-b border-gray-700">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Custom Input
+              </label>
+              <textarea
+                value={customInput}
+                onChange={(e) => setCustomInput(e.target.value)}
+                placeholder="Enter your custom input here..."
+                className="w-full h-24 bg-gray-900 text-white p-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+
           {/* Code Editor */}
-          <div className="flex-1">
+          <div className="flex-1 h-52">
             <CodeEditor
               language={selectedLanguage}
               value={code}
@@ -210,33 +259,77 @@ const ProblemPage = () => {
             />
           </div>
 
-          {/* Test Results */}
-          {testResults && (
-            <div className="p-4 border-t border-gray-700">
-              <div className={`p-3 rounded-lg ${
-                testResults.status === 'accepted' ? 'bg-green-900 text-green-300' :
-                testResults.status === 'success' ? 'bg-blue-900 text-blue-300' :
-                'bg-red-900 text-red-300'
-              }`}>
-                <div className="flex items-center space-x-2 mb-2">
-                  {testResults.status === 'accepted' && (
+          {/* Results Panel */}
+          {(executionResult || error) && (
+            <div className="p-4 border-t border-gray-700 max-h-full overflow-y-auto ">
+              {error && (
+                <div className="p-3 rounded-lg bg-red-900 text-red-300 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-medium">Error: {error}</span>
+                  </div>
+                </div>
+              )}
+
+              {executionResult && (
+                <div className={`p-3 rounded-lg ${getStatusColor(executionResult.status)}`}>
+                  <div className="flex items-center space-x-2 mb-2">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                  )}
-                  <span className="font-medium">{testResults.message}</span>
-                </div>
-                {testResults.output && (
-                  <pre className="text-sm mt-2 p-2 bg-gray-800 rounded">
-                    {testResults.output}
-                  </pre>
-                )}
-                {testResults.score && (
-                  <div className="text-sm mt-2">
-                    Score: {testResults.score} points
+                    <span className="font-medium">
+                      {executionResult.message || executionResult.status}
+                    </span>
                   </div>
-                )}
-              </div>
+
+                  {/* Show execution details for run results */}
+                  {executionResult.stdout && (
+                    <div className="mt-3">
+                      <div className="text-sm font-medium mb-1">Output:</div>
+                      <pre className="text-sm p-2 bg-gray-800 rounded whitespace-pre-wrap">
+                        {executionResult.stdout}
+                      </pre>
+                    </div>
+                  )}
+
+                  {executionResult.stderr && (
+                    <div className="mt-3">
+                      <div className="text-sm font-medium mb-1">Error:</div>
+                      <pre className="text-sm p-2 bg-red-800 rounded whitespace-pre-wrap">
+                        {executionResult.stderr}
+                      </pre>
+                    </div>
+                  )}
+
+                  {executionResult.compileOutput && (
+                    <div className="mt-3">
+                      <div className="text-sm font-medium mb-1">Compile Output:</div>
+                      <pre className="text-sm p-2 bg-yellow-800 rounded whitespace-pre-wrap">
+                        {executionResult.compileOutput}
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* Show submission results */}
+                  {executionResult.testResults && (
+                    <div className="mt-3">
+                      <div className="text-sm font-medium mb-2">
+                        Test Results: {executionResult.passedTests}/{executionResult.totalTests} passed
+                      </div>
+                      <div className="text-sm">Score: {executionResult.score}%</div>
+                    </div>
+                  )}
+
+                  {/* Show execution time and memory */}
+                  {executionResult.time !== undefined && (
+                    <div className="mt-2 text-sm text-gray-400">
+                      Time: {executionResult.time}s | Memory: {executionResult.memory}KB
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
